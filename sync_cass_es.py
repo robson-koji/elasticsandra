@@ -113,9 +113,14 @@ def readElasticSearch():
 
 	# Get all Indices (Databases)
 	#es_json = es.indices.get_settings(index='_all')
-	es_json = es.indices.get_mapping(index='_all')
+	try:
+		es_json = es.indices.get_mapping(index='_all')
+	except elasticsearch.exceptions.ConnectionError, e:
+		raise
+		exit(0)
 
 	# print es_json
+	# exit(0)
 
 	# Get indices
 	#print es_json.keys()
@@ -131,14 +136,14 @@ def readElasticSearch():
 			# print type_value
 
 			# Properties (Columns)
-			for es_property, property_value in es_json[es_indice].get('mappings')[es_type].get('properties').iteritems():
-				print "column: %s" % es_property
-				print property_value
+			# for es_property, property_value in es_json[es_indice].get('mappings')[es_type].get('properties').iteritems():
+			# 	print "column: %s" % es_property
+			# 	print property_value
 
 			# Properties data
 			es_hits = es.search(index=es_indice, doc_type=es_type).get('hits')
-			# for es_hits_hits in es_hits.get('hits'):
-			# 	print es_hits_hits
+			for es_hits_hits in es_hits.get('hits'):
+				print es_hits_hits
 				# try:
 				# 	print "_id: %s" % es_hits_hits.get('_id')
 				# 	print "timestamp: %s" % es_hits_hits.get('_source').get('timestamp')
@@ -146,9 +151,23 @@ def readElasticSearch():
 				# 	print e
 				# 	pass
 
+readElasticSearch()
+exit(0)
 
 
+# cs_columns = [('KEY', 'uuid', str(uuid.uuid4()), 'PRIMARY KEY'),
+# 				('timestamp', 'timestamp', '\'2015-02-14 17:48:38\'', ''), 
+# 				('firstname', 'varchar', '\'Jojo\'', ''), 
+# 				('lastname', 'varchar', '\'Sobrenome xyz\'', ''), 
+# 				('age', 'int', 8, ''), 
+# 				('city', 'varchar', '\'Maracatu\'', ''), 
+# 				('email', 'varchar', '\'jojo@jojo.com\'', '')]
 
+# cs_init_kwargs = {'keyspace': 'xyz'}
+# cs_insert_kwargs = {'columnfamily':'bbb',
+# 					'columns': cs_columns}
+
+					
 
 
 """ Read Cassandra """
@@ -203,50 +222,63 @@ def readCassandra():
 					print type(getattr(v, vf))
 					print getattr(v, vf)
 
-
-
-
-
 		print "\n\n"
 
 
 
 
+import uuid
+import elasticsearch
+from datetime import datetime
+
+es = elasticsearch.Elasticsearch()  # use default of localhost, port 9200
+
+class ElasticsearchLoader(object):
+	def __init__(self, *args, **kwargs):
+		self.index = kwargs['index']
+
+	def insert_data(self, *args, **kwargs):
+		es.index(index=self.index, doc_type=kwargs['doc_type'], id=kwargs['id'], body=kwargs['es_columns'])
+
+		# es.index(index=self.index, doc_type=self.doc_type, id=self.id, body={
+		#     'author': 'Santa Clause',
+		#     'blog': 'Slave Based Shippers of the North',
+		#     'title': 'Using Celery for distributing gift dispatch',
+		#     'topics': ['slave labor', 'elves', 'python',
+		#                'celery', 'antigravity reindeer'],
+		#     'awesomeness': 0.2,
+		#     "timestamp": datetime.now()
+		# })	
+
+
+dt = datetime.strptime("2015-02-14 17:48:38", "%Y-%m-%d %H:%M:%S")
+
+es_columns = {'timestamp': dt,
+				'firstname': 'Jojo', 
+				'lastname': 'Sobrenome xyz', 
+				'age':  8, 
+				'city': 'Maracatu', 
+				'email': 'jojo@jojo.com'}
+
+es_init_kwargs = {'index': 'ccc'}
+
+#uuid = 'd2a5b9f9-cd3a-49d6-8269-fa8d2d881e0f'
+
+es_insert_kwargs = {'id': str(uuid.uuid4()),
+# es_insert_kwargs = {'id': uuid,
+					'doc_type':'bbb',
+					'es_columns': es_columns}
+
+es_loader = ElasticsearchLoader(**es_init_kwargs)
+es_loader.insert_data(**es_insert_kwargs)
+					
+#es_loader = ElasticsearchLoader()
+#es_loader.load_elasticsearch()
+
+# readElasticSearch()
 
 
 
-def load_elasticsearch():
-	import uuid
-	import elasticsearch
-	from datetime import datetime
-
-	es = elasticsearch.Elasticsearch()  # use default of localhost, port 9200
-
-	es.index(index='posts', doc_type='blog', id=str(uuid.uuid4()), body={
-	    'author': 'Santa Clause',
-	    'blog': 'Slave Based Shippers of the North',
-	    'title': 'Using Celery for distributing gift dispatch',
-	    'topics': ['slave labor', 'elves', 'python',
-	               'celery', 'antigravity reindeer'],
-	    'awesomeness': 0.2,
-	    "timestamp": datetime.now()
-	})	
-	es.index(index='posts', doc_type='blog', id=str(uuid.uuid4()), body={
-	    'author': 'Benjamin Pollack',
-	    'blog': 'bitquabit',
-	    'title': 'Having Fun: Python and Elasticsearch',
-	    'topics': ['elasticsearch', 'python', 'parseltongue'],
-	    'awesomeness': 0.7,
-	    "timestamp": datetime.now()
-	})
-	es.index(index='posts', doc_type='blog', id=str(uuid.uuid4()), body={
-	    'author': 'Benjamin Pollack',
-	    'blog': 'bitquabit',
-	    'title': 'How to Write Clickbait Titles About Git Being Awful Compared to Mercurial',
-	    'topics': ['mercurial', 'git', 'flamewars', 'hidden messages'],
-	    'awesomeness': 0.95,
-	    "timestamp": datetime.now()
-	})
 
 
 from cassandra.cluster import Cluster
@@ -266,6 +298,7 @@ class CassandraSchemaHandler(object):
 		self.keyspace = kwargs['keyspace']
 		self.session = kwargs['session']
 
+
 	def create_keyspace(self):
 		self.session = self.cluster.connect()
 		try:		
@@ -273,6 +306,7 @@ class CassandraSchemaHandler(object):
 		except cassandra.AlreadyExists as e:
 			raise
 			exit(0)
+
 
 	def create_columnfamily(self, *args, **kwargs):
 		self.columnfamily = kwargs['columnfamily']
@@ -366,15 +400,12 @@ class CassandraLoader(object):
 				# print "------------"
 
 				self.cs_sch_hdl.create_columnfamily(**kwargs)
-
 				self.session.execute("insert into " + self.columnfamily + cl_keys + " values " + cl_values)
 
 				# session.execute("""
-			 # 		insert into asdf (lastname, age, city, email, firstname) values ('Sobrenome1', 30, 'Sao Paulo', 'ana@example.com', 'asdf')		 
+			 		# insert into asdf (lastname, age, city, email, firstname) values ('Sobrenome1', 30, 'Sao Paulo', 'ana@example.com', 'asdf')		 
 				#  """)
 
-#  qb_data = [['1', '2'], ['3', '4'], ['5', '6'], ['7', '8', '9']]
-# >>> ",".join("'%s'" % qb[0] for qb in qb_data)
 
 
 
@@ -391,15 +422,15 @@ cs_init_kwargs = {'keyspace': 'xyz'}
 cs_insert_kwargs = {'columnfamily':'bbb',
 					'columns': cs_columns}
 
-cassandra_loader = CassandraLoader(**cs_init_kwargs)
-cassandra_loader.insert_data(**cs_insert_kwargs)
+#cassandra_loader = CassandraLoader(**cs_init_kwargs)
+#cassandra_loader.insert_data(**cs_insert_kwargs)
 
 
 #readElasticSearch()
 #load_elasticsearch()
-#load_cassandra()
 
-#exit(0)
+
+
 
 """
 	Indice: movies
