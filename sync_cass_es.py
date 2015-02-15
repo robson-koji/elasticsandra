@@ -1,232 +1,5 @@
 
 
-"""
-class TheThing(object):
-	import datetime
-
-	def __init__(self):
-		if checkExists(id):
-			if checkNewer():
-				self.dt_change = datetime.datetime.now()
-				self.db_origin = ''
-
-		else:
-			self.id = ''
-			self.dt_change = datetime.datetime.now()
-			self.db_origin = ''
-
-
-
-	objectList = []
-
-
-
-	def checkExists(id):
-		for obj in objectList:
-		    if obj.id == id:
-		        return 1
-		        break
-		else:
-		    x = None	
-
-
-	def checkNewer(id):
-		for obj in objectList:
-		    if obj.id == id:
-		        print "i found it!"
-		        break
-		else:
-		    x = None	
-
-
-
-
-class CommonDataCreator(object):
-
-
-
-
-
-class ElasticsearchCreator(CommonDataCreator):
-    " Classe de Carrier para o relatorio AverageFinancialTermsReportView"
-    def __init__(self, o, **kwargs):
-        super(AverageFinancialTermsReportViewCarrier, self).__init__( o, **kwargs)
-        self.dt_diff = 0        
-
-    def update(self, o, **kwargs):
-        super(AverageFinancialTermsReportViewCarrier, self).update( o, **kwargs)
-        self.dt_diff += kwargs['dt_diff']
-
-class CassandraCreator(CommonDataCreator):
-
-
-
-
-"""
-""" Classe usada para instanciar ou atualizar um objeto """
-"""
-
-class TheThingCreator(object):
-
-    def __init__(self, instance_list):        
-        self.instance_list = instance_list
-
-    def check_exists(self, *args, **kwargs):
-        self.data_object = kwargs['data_object']
-        try:
-            # Update if exists or create.
-            for instance in self.instance_list:
-                if instance.object_identifier == kwargs['object_identifier']:
-                    instance.update(self.data_object, **kwargs)             
-                    return
-                else:
-                    pass
-            instance = kwargs['factory'](self.data_object, **kwargs)                    
-            instance.update(self.data_object, **kwargs)             
-            self.instance_list.append(instance)
-            return
-
-        except Exception, e:
-            logger.error('InstanceCreator - check_exists -> %s' %  e)
-            pass  
-
-
-
-objects_list = []
-tt_creator = TheThingCreator(objects_list)
-
-
-  #       tt_creator = TheThingCreator(objects_list)
-  #       data_kwargs['id'] = 
-		# data_kwargs['factory'] = ElasticsearchCreator
-  #       tt_creator.check_exists(**data_kwargs)
-
-"""
-
-
-
-""" Read ElasticSearch """
-def readElasticSearch():
-	import elasticsearch
-
-	es = elasticsearch.Elasticsearch()  # use default of localhost, port 9200
-
-	# Get all Indices (Databases)
-	#es_json = es.indices.get_settings(index='_all')
-	try:
-		es_json = es.indices.get_mapping(index='_all')
-	except elasticsearch.exceptions.ConnectionError, e:
-		raise
-		exit(0)
-
-	# print es_json
-	# exit(0)
-
-	# Get indices
-	#print es_json.keys()
-
-	# Indices (Database)
-	for es_indice, indice_value in es_json.iteritems():
-		print "Indice: %s" % es_indice
-		# print indice_value
-
-		# Types (Tables)
-		for es_type, type_value in es_json[es_indice].get('mappings').iteritems():
-			print "Type: %s" % es_type
-			# print type_value
-
-			# Properties (Columns)
-			# for es_property, property_value in es_json[es_indice].get('mappings')[es_type].get('properties').iteritems():
-			# 	print "column: %s" % es_property
-			# 	print property_value
-
-			# Properties data
-			es_hits = es.search(index=es_indice, doc_type=es_type).get('hits')
-			for es_hits_hits in es_hits.get('hits'):
-				print es_hits_hits
-				# try:
-				# 	print "_id: %s" % es_hits_hits.get('_id')
-				# 	print "timestamp: %s" % es_hits_hits.get('_source').get('timestamp')
-				# except Exception, e:
-				# 	print e
-				# 	pass
-
-readElasticSearch()
-exit(0)
-
-
-# cs_columns = [('KEY', 'uuid', str(uuid.uuid4()), 'PRIMARY KEY'),
-# 				('timestamp', 'timestamp', '\'2015-02-14 17:48:38\'', ''), 
-# 				('firstname', 'varchar', '\'Jojo\'', ''), 
-# 				('lastname', 'varchar', '\'Sobrenome xyz\'', ''), 
-# 				('age', 'int', 8, ''), 
-# 				('city', 'varchar', '\'Maracatu\'', ''), 
-# 				('email', 'varchar', '\'jojo@jojo.com\'', '')]
-
-# cs_init_kwargs = {'keyspace': 'xyz'}
-# cs_insert_kwargs = {'columnfamily':'bbb',
-# 					'columns': cs_columns}
-
-					
-
-
-""" Read Cassandra """
-def readCassandra():
-
-	#
-	## Check how does Python connects to Cassandra, and credential
-	#
-
-	from cassandra.cluster import Cluster
-	cluster = Cluster()
-	session = cluster.connect('demo')
-
-	
-	""" Get keyspaces (Databases) """
-	keyspaces = session.execute(" SELECT keyspace_name FROM system.schema_keyspaces ")
-
-	for k in keyspaces:
-		keyspace = k.keyspace_name
-
-		# Ignore system tables
-		if keyspace == 'system' or keyspace == 'system_traces':
-			continue
-
-		print "keyspace: %s" % keyspace
-
-		""" Get columnfamilies (Tables) """
-		prepared_stmt = session.prepare( "SELECT columnfamily_name FROM system.schema_columnfamilies WHERE keyspace_name = ? ")
-		bound_stmt = prepared_stmt.bind(k)
-		columnfamilies = session.execute(bound_stmt)
-
-		for cf in columnfamilies:
-			columnfamily = cf.columnfamily_name
-			print "columnfamilies: %s" % columnfamily
-
-			""" Get columns (Columns)"""
-			prepared_stmt = session.prepare(" SELECT * FROM system.schema_columns WHERE keyspace_name = ? AND columnfamily_name = ? ")
-			bound_stmt = prepared_stmt.bind([keyspace, columnfamily])
-			columns = session.execute(bound_stmt)
-
-			# for c in columns:
-			# 	print dir(c)
-			 	#print c.type
-				#print "column: %s" % c.column_name
-
-			""" Get field values (Columns)"""
-			values = session.execute(" SELECT * FROM " + columnfamily )
-
-			for v in values:
-			 	for vf in v._fields:
-			# 		print type(vf)
-					print type(getattr(v, vf))
-					print getattr(v, vf)
-
-		print "\n\n"
-
-
-
-
 import uuid
 import elasticsearch
 from datetime import datetime
@@ -235,42 +8,35 @@ es = elasticsearch.Elasticsearch()  # use default of localhost, port 9200
 
 class ElasticsearchLoader(object):
 	def __init__(self, *args, **kwargs):
-		self.index = kwargs['index']
+		self.index = kwargs['db']
 
 	def insert_data(self, *args, **kwargs):
+		print kwargs
 		es.index(index=self.index, doc_type=kwargs['doc_type'], id=kwargs['id'], body=kwargs['es_columns'])
 
-		# es.index(index=self.index, doc_type=self.doc_type, id=self.id, body={
-		#     'author': 'Santa Clause',
-		#     'blog': 'Slave Based Shippers of the North',
-		#     'title': 'Using Celery for distributing gift dispatch',
-		#     'topics': ['slave labor', 'elves', 'python',
-		#                'celery', 'antigravity reindeer'],
-		#     'awesomeness': 0.2,
-		#     "timestamp": datetime.now()
-		# })	
 
 
-dt = datetime.strptime("2015-02-14 17:48:38", "%Y-%m-%d %H:%M:%S")
 
-es_columns = {'timestamp': dt,
-				'firstname': 'Jojo', 
-				'lastname': 'Sobrenome xyz', 
-				'age':  8, 
-				'city': 'Maracatu', 
-				'email': 'jojo@jojo.com'}
+# dt = datetime.strptime("2015-02-14 17:48:38", "%Y-%m-%d %H:%M:%S")
 
-es_init_kwargs = {'index': 'ccc'}
+# es_columns = {'timestamp': dt,
+# 				'firstname': 'Jojo', 
+# 				'lastname': 'Sobrenome xyz', 
+# 				'age':  8, 
+# 				'city': 'Maracatu', 
+# 				'email': 'jojo@jojo.com'}
 
-#uuid = 'd2a5b9f9-cd3a-49d6-8269-fa8d2d881e0f'
+# es_init_kwargs = {'index': 'ccc'}
 
-es_insert_kwargs = {'id': str(uuid.uuid4()),
-# es_insert_kwargs = {'id': uuid,
-					'doc_type':'bbb',
-					'es_columns': es_columns}
+# #uuid = 'd2a5b9f9-cd3a-49d6-8269-fa8d2d881e0f'
 
-es_loader = ElasticsearchLoader(**es_init_kwargs)
-es_loader.insert_data(**es_insert_kwargs)
+# es_insert_kwargs = {'id': str(uuid.uuid4()),
+# # es_insert_kwargs = {'id': uuid,
+# 					'doc_type':'bbb',
+# 					'es_columns': es_columns}
+
+# es_loader = ElasticsearchLoader(**es_init_kwargs)
+# es_loader.insert_data(**es_insert_kwargs)
 					
 #es_loader = ElasticsearchLoader()
 #es_loader.load_elasticsearch()
@@ -295,7 +61,7 @@ Provides methods to handle Cassandra schema.
 class CassandraSchemaHandler(object):
 	def __init__(self, *args, **kwargs):
 		self.cluster = Cluster()
-		self.keyspace = kwargs['keyspace']
+		self.keyspace = kwargs['db']
 		self.session = kwargs['session']
 
 
@@ -348,7 +114,7 @@ class CassandraLoader(object):
 	"""
 	def __init__(self, *args, **kwargs):
 		self.cluster = Cluster()
-		self.keyspace = kwargs['keyspace']
+		self.keyspace = kwargs['db']
 	
 		try:
 			self.session = self.cluster.connect(self.keyspace)
@@ -406,10 +172,6 @@ class CassandraLoader(object):
 			 		# insert into asdf (lastname, age, city, email, firstname) values ('Sobrenome1', 30, 'Sao Paulo', 'ana@example.com', 'asdf')		 
 				#  """)
 
-
-
-
-
 cs_columns = [('KEY', 'uuid', str(uuid.uuid4()), 'PRIMARY KEY'),
 				('timestamp', 'timestamp', '\'2015-02-14 17:48:38\'', ''), 
 				('firstname', 'varchar', '\'Jojo\'', ''), 
@@ -422,10 +184,261 @@ cs_init_kwargs = {'keyspace': 'xyz'}
 cs_insert_kwargs = {'columnfamily':'bbb',
 					'columns': cs_columns}
 
+
+
+
+
+
+"""
+This list holds references to DB updater Classes,
+which are called when data is new or is not up to date.
+"""
+data_origin_list = [ElasticsearchLoader, CassandraLoader]
+
+
+"""
+This Class checks whether data is new or is not up to date.
+In both cases update respective DBs, otherwise just pass. 
+"""
+class TheChecker(object):
+    def __init__(self, *args, **kwargs):    
+        self.objects_dict = kwargs['objects_dict']
+        self.caller = kwargs['caller']		
+        not_caller_kwargs = {'db': kwargs['db']}
+        
+        # Working only while working with two dbs,
+        # Elasticsearch and Cassandra.
+        for not_caller in data_origin_list:
+        	if not_caller != self.caller:
+				# Instantiate the DB to update.
+				self.updater = not_caller(**not_caller_kwargs)
+
+    def check_exists(self, *args, **kwargs):
+    	self.id = kwargs['id'] 
+    	self.date = kwargs['timestamp'] 
+
+
+
+    	if self.id not in objects_dict or (self.id in objects_dict and self.date > objects_dict[self.id]):
+			# Update DB
+			self.updater.insert_data(**kwargs)
+
+			# Update dict item with actual date
+			objects_dict[self.id] = self.date
+
+
+
+objects_dict = {}
+
+""" Read ElasticSearch """
+def readElasticSearch():
+	import elasticsearch
+
+	es = elasticsearch.Elasticsearch()  # use default of localhost, port 9200
+
+	# Get all Indices (Databases)
+	#es_json = es.indices.get_settings(index='_all')
+	try:
+		es_json = es.indices.get_mapping(index='_all')
+	except elasticsearch.exceptions.ConnectionError, e:
+		raise
+		exit(0)
+
+	# print es_json
+	# exit(0)
+
+	# Get indices
+	#print es_json.keys()
+
+	# Indices (Database)
+	for es_indice, indice_value in es_json.iteritems():
+		print "Indice: %s" % es_indice
+		# print indice_value
+
+		# Types (Tables)
+		for es_type, type_value in es_json[es_indice].get('mappings').iteritems():
+			print "Type: %s" % es_type
+			#print type_value
+			#print es_json[es_indice].get('mappings')[es_type].get('properties')
+
+			# Properties (Columns)
+			# for es_property, property_value in es_json[es_indice].get('mappings')[es_type].get('properties').iteritems():
+			# 	print "column: %s" % es_property
+			# 	print property_value
+
+			# Properties data
+			es_hits = es.search(index=es_indice, doc_type=es_type).get('hits')
+			for es_hits_hits in es_hits.get('hits'):
+				print es_hits_hits
+				# try:
+				# 	print "_id: %s" % es_hits_hits.get('_id')
+				# 	print dir(es_hits_hits.get('_source').get('timestamp'))
+				# 	print es_hits_hits.get('_source').get('timestamp').__class__
+				# 	print "timestamp: %s" % es_hits_hits.get('_source').get('timestamp')
+				# except Exception, e:
+				# 	print e
+				# 	pass
+
+# readElasticSearch()
+# exit(0)
+
+
+# cs_columns = [('KEY', 'uuid', str(uuid.uuid4()), 'PRIMARY KEY'),
+# 				('timestamp', 'timestamp', '\'2015-02-14 17:48:38\'', ''), 
+# 				('firstname', 'varchar', '\'Jojo\'', ''), 
+# 				('lastname', 'varchar', '\'Sobrenome xyz\'', ''), 
+# 				('age', 'int', 8, ''), 
+# 				('city', 'varchar', '\'Maracatu\'', ''), 
+# 				('email', 'varchar', '\'jojo@jojo.com\'', '')]
+
+# cs_init_kwargs = {'keyspace': 'xyz'}
+# cs_insert_kwargs = {'columnfamily':'bbb',
+# 					'columns': cs_columns}
+
+
+
+
+""" Read Cassandra """
+def readCassandra():
+
+	#
+	## Check how does Python connects to Cassandra, and credential
+	#
+	import cassandra
+	from cassandra.cluster import Cluster
+	cluster = Cluster()
+	session = cluster.connect()
+
+	
+	""" Get keyspaces (Databases) """
+	keyspaces = session.execute(" SELECT keyspace_name FROM system.schema_keyspaces ")
+
+	# Arguments to send TheChecker
+	tc_kwargs = {'objects_dict': objects_dict, 'caller': CassandraLoader} 
+
+	for k in keyspaces:
+		keyspace = k.keyspace_name
+		session = cluster.connect(keyspace)
+
+		# Instantiate TheCheker for each keyspace
+		tc_kwargs['db'] = keyspace
+		t_checker = TheChecker(**tc_kwargs)
+		# Cassandra will models output data specific to Elasticsearch
+		# and vice versa.
+		es_insert_kwargs = {}
+
+		# Ignore system tables
+		if keyspace == 'system' or keyspace == 'system_traces':
+			continue
+
+		print "keyspace: %s" % keyspace
+
+		""" Get columnfamilies (Tables) """
+		prepared_stmt = session.prepare( "SELECT columnfamily_name FROM system.schema_columnfamilies WHERE keyspace_name = ? ")
+		bound_stmt = prepared_stmt.bind(k)
+		columnfamilies = session.execute(bound_stmt)
+
+		for cf in columnfamilies:
+			columnfamily = cf.columnfamily_name
+			print "columnfamilies: %s" % columnfamily
+
+			""" Get columns (Columns)"""
+			prepared_stmt = session.prepare(" SELECT * FROM system.schema_columns WHERE keyspace_name = ? AND columnfamily_name = ? ")
+			bound_stmt = prepared_stmt.bind([keyspace, columnfamily])
+			columns = session.execute(bound_stmt)
+
+			# for c in columns:
+			# 	print dir(c)
+			#  	print c.type
+			# 	print "column: %s" % c.column_name
+
+			""" Get field values (Columns)"""
+			try:			
+				rows = session.execute(" SELECT * FROM " + columnfamily )
+				es_columns = {}
+
+				for row in rows:
+					# print row
+					try:
+						es_insert_kwargs['doc_type'] = columnfamily
+						es_insert_kwargs['timestamp'] = row.timestamp
+						es_insert_kwargs['id'] = row.id
+
+			 	 		# print row.timestamp
+			 	 		# print row.id
+
+						# Filling es_columns dict inside try, to avoid
+						# id or timestamp errors
+				 	 	for column in row._fields:
+				 	 		# ID uuid field went outside data kwargs.
+				 	 		# Remove here or will get wrong.
+				 	 		if type(getattr(row, column)) is uuid.UUID:
+				 	 			continue
+
+				 	 		es_columns[column] = getattr(row, column)
+							# print type(getattr(row, column)).__name__
+
+						es_insert_kwargs['es_columns'] = es_columns
+						t_checker.check_exists(**es_insert_kwargs)
+
+			 	 	except AttributeError, e:
+			 	 		# print e
+			 	 		pass
+		
+
+			except cassandra.InvalidRequest, e:
+				#print e
+				pass
+
+
+		print "\n\n"
+
+
+readCassandra()
+exit(0)
+
+
+dt = datetime.strptime("2015-02-14 17:48:38", "%Y-%m-%d %H:%M:%S")
+
+es_columns = {'timestamp': dt,
+				'firstname': 'Jojo', 
+				'lastname': 'Sobrenome xyz', 
+				'age':  8, 
+				'city': 'Maracatu', 
+				'email': 'jojo@jojo.com'}
+
+es_init_kwargs = {'index': 'ccc'}
+
+#uuid = 'd2a5b9f9-cd3a-49d6-8269-fa8d2d881e0f'
+
+es_insert_kwargs = {'id': str(uuid.uuid4()),
+					'timestamp': '',
+					'doc_type':'bbb',
+					'es_columns': es_columns}
+
+#es_loader = ElasticsearchLoader(**es_init_kwargs)
+#es_loader.insert_data(**es_insert_kwargs)
+					
+#es_loader = ElasticsearchLoader()
+#es_loader.load_elasticsearch()
+
+# readElasticSearch()
+
+
+#t_checker = TheChecker(objects_dict)
+# obj_kwargs = {'id': ,
+# 				'date': ,
+# 				'data_origin': ,
+# 				'data': ,}
+
+#t_checker.check_exists(obj_kwargs)
+
+
+
+
+
 #cassandra_loader = CassandraLoader(**cs_init_kwargs)
 #cassandra_loader.insert_data(**cs_insert_kwargs)
-
-
 #readElasticSearch()
 #load_elasticsearch()
 
