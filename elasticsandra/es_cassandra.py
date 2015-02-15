@@ -127,26 +127,23 @@ class CassandraLoader(object):
 
 
 class CassandraReader(object):
-	def readCassandra():
+	def __init__(self, objects_dict):
+		self.cluster = Cluster()
+		self.session = self.cluster.connect()
+		self.objects_dict = objects_dict
 
-		#
-		## Check how does Python connects to Cassandra, and credential
-		#
-		import cassandra
-		from cassandra.cluster import Cluster
-		cluster = Cluster()
-		session = cluster.connect()
+	def read_cassandra(self):
+		from elasticsandra import TheChecker
 
-		
 		""" Get keyspaces (Databases) """
-		keyspaces = session.execute(" SELECT keyspace_name FROM system.schema_keyspaces ")
+		keyspaces = self.session.execute(" SELECT keyspace_name FROM system.schema_keyspaces ")
 
-		# Arguments to send TheChecker
-		tc_kwargs = {'objects_dict': objects_dict, 'caller': CassandraLoader} 
+		# Arguments to send to TheChecker
+		tc_kwargs = {'objects_dict': self.objects_dict, 'caller': CassandraLoader} 
 
 		for k in keyspaces:
 			keyspace = k.keyspace_name
-			session = cluster.connect(keyspace)
+			self.session = self.cluster.connect(keyspace)
 
 			# Instantiate TheCheker for each keyspace
 			tc_kwargs['db'] = keyspace
@@ -162,18 +159,18 @@ class CassandraReader(object):
 			print "keyspace: %s" % keyspace
 
 			""" Get columnfamilies (Tables) """
-			prepared_stmt = session.prepare( "SELECT columnfamily_name FROM system.schema_columnfamilies WHERE keyspace_name = ? ")
+			prepared_stmt = self.session.prepare( "SELECT columnfamily_name FROM system.schema_columnfamilies WHERE keyspace_name = ? ")
 			bound_stmt = prepared_stmt.bind(k)
-			columnfamilies = session.execute(bound_stmt)
+			columnfamilies = self.session.execute(bound_stmt)
 
 			for cf in columnfamilies:
 				columnfamily = cf.columnfamily_name
 				print "columnfamilies: %s" % columnfamily
 
 				""" Get columns (Columns)"""
-				prepared_stmt = session.prepare(" SELECT * FROM system.schema_columns WHERE keyspace_name = ? AND columnfamily_name = ? ")
+				prepared_stmt = self.session.prepare(" SELECT * FROM system.schema_columns WHERE keyspace_name = ? AND columnfamily_name = ? ")
 				bound_stmt = prepared_stmt.bind([keyspace, columnfamily])
-				columns = session.execute(bound_stmt)
+				columns = self.session.execute(bound_stmt)
 
 				# for c in columns:
 				# 	print dir(c)
@@ -182,7 +179,7 @@ class CassandraReader(object):
 
 				""" Get field values (Columns)"""
 				try:			
-					rows = session.execute(" SELECT * FROM " + columnfamily )
+					rows = self.session.execute(" SELECT * FROM " + columnfamily )
 					es_columns = {}
 
 					for row in rows:

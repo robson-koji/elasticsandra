@@ -1,6 +1,7 @@
-import uuid
-import elasticsearch
 from datetime import datetime
+
+import elasticsearch
+import uuid
 
 es = elasticsearch.Elasticsearch()  # use default of localhost, port 9200
 
@@ -18,6 +19,8 @@ class ElasticsearchLoader(object):
 
 
 class ElasticsearchReader(object):
+#	from elasticsandra import TheChecker
+
 	def readElasticSearch():
 		es = elasticsearch.Elasticsearch()  # use default of localhost, port 9200
 

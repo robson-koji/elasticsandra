@@ -17,8 +17,8 @@ class TheChecker(object):
         self.caller = kwargs['caller']		
         not_caller_kwargs = {'db': kwargs['db']}
         
-        # Working only while working with two dbs,
-        # Elasticsearch and Cassandra.
+        # Works only while using two dbs, Elasticsearch and Cassandra.
+        # If add more DBs to sync, need to change here.
         for not_caller in data_origin_list:
         	if not_caller != self.caller:
 				# Instantiate the DB to update.
@@ -28,11 +28,9 @@ class TheChecker(object):
     	self.id = kwargs['id'] 
     	self.date = kwargs['timestamp'] 
 
-
-
-    	if self.id not in objects_dict or (self.id in objects_dict and self.date > objects_dict[self.id]):
+    	if self.id not in self.objects_dict or (self.id in self.objects_dict and self.date > self.objects_dict[self.id]):
 			# Update DB
 			self.updater.insert_data(**kwargs)
 
 			# Update dict item with actual date
-			objects_dict[self.id] = self.date
+			self.objects_dict[self.id] = self.date

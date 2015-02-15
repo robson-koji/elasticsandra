@@ -2,6 +2,6 @@
 README
 setup.py
 elasticsandra/__init__.py
+elasticsandra/elasticsandra.py
 elasticsandra/es_cassandra.py
 elasticsandra/es_elasticsearch.py
-elasticsandra/sync_cass_es.py
