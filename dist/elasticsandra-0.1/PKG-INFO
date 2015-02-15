@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: elasticsandra
+Version: 0.1
+Summary: Synchronizer between Elasticsearch <-> Cassandra
+Home-page: https://github.com/fortinbras/elasticsandra/
+Author: Robson Koji
+Author-email: rbsnkjmr@gmail.com
+License: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
