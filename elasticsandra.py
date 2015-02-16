@@ -1,5 +1,5 @@
 from elasticsandra.es_cassandra import CassandraReader
-#from elasticsandra.es_elasticsearch import ElasticsearcReader
+from elasticsandra.es_elasticsearch import ElasticsearchReader
 
 import os
 import sys
@@ -42,12 +42,14 @@ class App():
 
         self.pidfile_path = '/tmp/mydaemon.pid'
         self.pidfile_timeout = 5
+        self.cassandra_reader = CassandraReader(self.objects_dict)
+        self.elasticsearch_reader = ElasticsearchReader(self.objects_dict)
 
     def run(self):
         while True:
-			cassandra_reader = CassandraReader(self.objects_dict)
-			cassandra_reader.read_cassandra()
-			time.sleep(float(self.delay))
+        	self.elasticsearch_reader.read_elasticsearch()
+        	self.cassandra_reader.read_cassandra()
+        	time.sleep(float(self.delay))
 
 
 app = App(delay)

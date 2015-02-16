@@ -5,19 +5,19 @@ import cassandra
 import uuid
 import re
 
+cluster = Cluster()
 
 """
 Provides methods to handle Cassandra schema.
 """
 class CassandraSchemaHandler(object):
 	def __init__(self, *args, **kwargs):
-		self.cluster = Cluster()
 		self.keyspace = kwargs['db']
-		self.session = kwargs['session']
+		#self.session = kwargs['session']
 
 
 	def create_keyspace(self):
-		self.session = self.cluster.connect()
+		self.session = cluster.connect()
 		try:		
 			self.session.execute(" CREATE KEYSPACE " +  self.keyspace + " WITH replication = {\'class':'SimpleStrategy', 'replication_factor':3}; ")
 		except cassandra.AlreadyExists as e:
@@ -27,11 +27,21 @@ class CassandraSchemaHandler(object):
 
 	def create_columnfamily(self, *args, **kwargs):
 		self.columnfamily = kwargs['columnfamily']
-		self.columns = kwargs['columns']		
+		self.columns = kwargs['cs_columns']		
+		self.session = kwargs['session']		
 
-		creating_columns = "( " + ",".join("{0} {1} {2}".format(cl[0], cl[1], cl[3]) for cl in self.columns)  + ") "
+
+		# This composition of Primary Keys is necessary to allow ordering.
+		# Ordering is needed for slice while selecting and limiting qt of returning query.
+		# clf_id creates an artificial table to allow ordering. Whithout EQ or IN it is not
+		# possible to order, so the select is equal his own columnfamilly.
+		creating_columns = "( " + ",".join("{0} {1}".format(cl[0], cl[1]) for cl in self.columns) + \
+								", PRIMARY KEY (clf_id, timestamp, KEY)) WITH CLUSTERING ORDER BY (timestamp DESC)"
+		
+
 
 		print "================"
+ 		print "creating columnfamily: " + str(self.columnfamily)
 		print creating_columns
 		print "================"
 
@@ -64,92 +74,106 @@ class CassandraLoader(object):
 	If keyspace does not exist, create on init.
 	"""
 	def __init__(self, *args, **kwargs):
-		self.cluster = Cluster()
 		self.keyspace = kwargs['db']
+		self.cs_sch_hdl = CassandraSchemaHandler(**kwargs)
 	
 		try:
-			self.session = self.cluster.connect(self.keyspace)
+			self.session = cluster.connect(self.keyspace)
 		except cassandra.InvalidRequest as e:
 			# Error code and msg of the exception returns one long string only. 
 			# To catch the specific exception, I had to use regex.			
 			#if re.search('does not exist' , e.message) is not None:
 				self.cs_sch_hdl.create_keyspace()
-				self.session = self.cluster.connect(self.keyspace)
-
-		kwargs['session'] = self.session
-		self.cs_sch_hdl = CassandraSchemaHandler(**kwargs)
-
-	
-	#exit(0)
-	# session = cluster.connect('posts')
-# {u'_score': 1.0, u'_type': u'blog', u'_id': u'0b350530-5395-4fb6-820a-349903ae857c', u'_source': {u'awesomeness': 0.2, u'author': u'Santa Clause', u'timestamp': u'2015-02-13T12:36:28.589949', 
-# u'topics': [u'slave labor', u'elves', u'python', u'celery', u'antigravity reindeer'], u'title': u'Using Celery for distributing gift dispatch', u'blog': u'Slave Based Shippers of the North'}, u'_index': u'posts'}
-#insert into movie (id, timestamp, awesomeness, author, topics, title, blog) values (str(uuid.uuid4()), datetime.now(), 'Sobrenome1', 30, 'Sao Paulo', 'ana@example.com', 'Ana')
-#			values = session.execute(" SELECT * FROM " + columnfamily )
+				self.session = cluster.connect(self.keyspace)
 
 	def insert_data(self, *args, **kwargs):
 		self.columnfamily = kwargs['columnfamily']
-		self.columns = kwargs['columns']
+		self.columns = kwargs['cs_columns']
+		kwargs['session'] = self.session
 
-		cl_keys = " (" + ",".join("%s" % cl[0] for cl in self.columns)  + ") "
-		cl_values = " (" + ",".join("%s" % cl[2] for cl in self.columns)  + ") "
+		self.cl_keys = " (" + ",".join("%s" % cl[0] for cl in self.columns)  + ") "
+		self.cl_values = " (" + ",".join("%s" % cl[2] for cl in self.columns)  + ") "
 
-		print cl_keys
-		print cl_values
-		#exit(0)
+		print self.cl_keys
+		print self.cl_values
+		# exit(0)
+
+		self.try_insert(**kwargs)
+
+
+	def try_insert(self, *args, **kwargs):
 
 		try:
-			#self.session.execute("insert into " + columnfamily + "(lastname, age, city, email, firstname) \
-			#	values ('Sobrenome1', 30, 'Sao Paulo', 'ana@example.com', 'asdf')")
-
-			self.session.execute("insert into " + self.columnfamily + cl_keys + " values " + cl_values)
-
+			self.session.execute("insert into " + self.columnfamily + self.cl_keys + " values " + self.cl_values)
+			print "++++++++++++>OK!"
+			return 
 
 		except cassandra.InvalidRequest as e:
 			# Error code and msg of the exception returns one long string only. 
 			# To catch the specific exception, I had to use regex.
-			#if re.search('unconfigured columnfamily' , e.message) is not None:
-
-				# print "------------"
-				# print repr(e)
-				# print e.message
-				# print e.args[0]
-				# print "------------"
-
+			if re.search('unconfigured columnfamily' , e.message) is not None:
 				self.cs_sch_hdl.create_columnfamily(**kwargs)
-				self.session.execute("insert into " + self.columnfamily + cl_keys + " values " + cl_values)
 
-				# session.execute("""
-			 		# insert into asdf (lastname, age, city, email, firstname) values ('Sobrenome1', 30, 'Sao Paulo', 'ana@example.com', 'asdf')		 
-				#  """)
+				# Recursive call to try again.
+				self.try_insert(**kwargs)
+			elif re.search('unable to coerce' , e.message) is not None:
+				print e
+
+			elif re.search('for key of type uuid' , e.message) is not None:
+				print e
+			else:
+				print e
+			print "------------>NOK!"
+		except cassandra.protocol.SyntaxException as e:
+			print "------------>NOK!"
+			print e
 
 
+				
 
+
+# Constant to limit number of register to synchronize each round.
+# Delay for each round is defined on daemon initialization.
+LIMIT = 1000
+
+
+import time
 
 class CassandraReader(object):
 	def __init__(self, objects_dict):
-		self.cluster = Cluster()
-		self.session = self.cluster.connect()
+
 		self.objects_dict = objects_dict
+		# keyspaces = self.session.execute(" SELECT keyspace_name FROM system.schema_keyspaces")		
+		# print "asdfasdfsdf"
+		# print keyspaces
+ 		# print "\n\n\nINIT OK\n\n\n"
 
 	def read_cassandra(self):
 		from elasticsandra import TheChecker
+		self.session = cluster.connect()
 
 		""" Get keyspaces (Databases) """
 		keyspaces = self.session.execute(" SELECT keyspace_name FROM system.schema_keyspaces ")
+		#keyspaces = self.session.execute(" SELECT keyspace_name FROM system.schema_keyspaces")		
+
+		print keyspaces
 
 		# Arguments to send to TheChecker
 		tc_kwargs = {'objects_dict': self.objects_dict, 'caller': CassandraLoader} 
 
 		for k in keyspaces:
+
+			start = time.time()
+
+
+
 			keyspace = k.keyspace_name
-			self.session = self.cluster.connect(keyspace)
+			self.session = cluster.connect(keyspace)
 
 			# Instantiate TheCheker for each keyspace
 			tc_kwargs['db'] = keyspace
 			t_checker = TheChecker(**tc_kwargs)
-			# Cassandra will models output data specific to Elasticsearch
-			# and vice versa.
+			# Cassandra will models output data specific to Elasticsearch and vice versa.
 			es_insert_kwargs = {}
 
 			# Ignore system tables
@@ -179,7 +203,9 @@ class CassandraReader(object):
 
 				""" Get field values (Columns)"""
 				try:			
-					rows = self.session.execute(" SELECT * FROM " + columnfamily )
+					query = " SELECT * FROM " + columnfamily + " WHERE clf_id = \'" +columnfamily+ "\' ORDER BY timestamp DESC LIMIT " + str(LIMIT)
+					rows = self.session.execute(query)
+
 					es_columns = {}
 
 					for row in rows:
@@ -187,13 +213,9 @@ class CassandraReader(object):
 						try:
 							es_insert_kwargs['doc_type'] = columnfamily
 							es_insert_kwargs['timestamp'] = row.timestamp
-							es_insert_kwargs['id'] = row.id
+							es_insert_kwargs['id'] = row.key
 
-				 	 		# print row.timestamp
-				 	 		# print row.id
-
-							# Filling es_columns dict inside try, to avoid
-							# id or timestamp errors
+							# Filling es_columns dict inside try, to avoid id or timestamp errors
 					 	 	for column in row._fields:
 					 	 		# ID uuid field went outside data kwargs.
 					 	 		# Remove here or will get wrong.
@@ -205,15 +227,19 @@ class CassandraReader(object):
 
 							es_insert_kwargs['es_columns'] = es_columns
 							t_checker.check_exists(**es_insert_kwargs)
-
 				 	 	except AttributeError, e:
-				 	 		# print e
+				 	 		print e
 				 	 		pass
-			
 
 				except cassandra.InvalidRequest, e:
 					#print e
 					pass
 
-
 			print "\n\n"
+
+
+			# (or do something more productive)
+			done = time.time()
+
+			if done - start < 2:
+				time.sleep(2)
