@@ -11,8 +11,12 @@ class ElasticsearchLoader(object):
 		self.es = elasticsearch.Elasticsearch()  # use default of localhost, port 9200
 
 	def insert_data(self, *args, **kwargs):
-		print kwargs
-		self.es.index(index=self.index, doc_type=kwargs['doc_type'], id=kwargs['id'], body=kwargs['es_columns'])
+		#print kwargs
+		try:
+			self.es.index(index=self.index, doc_type=kwargs['doc_type'], id=kwargs['id'], body=kwargs['es_columns'])
+		except Exception as e:			
+#			print kwargs
+			print e
 
 
 
@@ -58,6 +62,7 @@ class ElasticsearchReader(object):
 
 			# Types (Tables)
 			for es_type, type_value in es_json[es_indice].get('mappings').iteritems():
+				print "Indice: %s" % es_indice
 				print "Type: %s" % es_type
 
 				# Properties (Columns)

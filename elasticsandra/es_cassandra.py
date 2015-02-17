@@ -123,8 +123,13 @@ class CassandraLoader(object):
 				print e
 			else:
 				print e
+			print "aqui"				
 			print "------------>NOK!"
 		except cassandra.protocol.SyntaxException as e:
+			print "ou aqui"			
+			print self.columnfamily
+			print self.cl_keys
+			print self.cl_values
 			print "------------>NOK!"
 			print e
 
