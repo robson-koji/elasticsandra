@@ -27,11 +27,8 @@ class TheChecker(object):
                 self.updater = not_caller(**not_caller_kwargs)
 
     def check_exists(self, *args, **kwargs):
-        self.id = kwargs['id'] 
+        self.id = str(kwargs['id'])
         self.date = kwargs['timestamp'] 
-
-        # print type(kwargs['timestamp'])
-        # print kwargs['timestamp']         
 
         if self.id not in self.objects_dict or (self.id in self.objects_dict and self.date > self.objects_dict[self.id]):
             # Update DB

@@ -16,22 +16,22 @@ args = sys.argv
 delay = 0
 
 try:
-	if sys.argv[1] == 'start':
-		delay = int(sys.argv[2])
+    if sys.argv[1] == 'start':
+        delay = int(sys.argv[2])
 except IndexError, e:
-	print "usage: python elasticsandra.py start <delay to repeat (in seconds)>"
-	exit(0)
+    print "usage: python elasticsandra.py start <delay to repeat (in seconds)>"
+    exit(0)
 except Exception, e:
-	print e
-	exit(0)
+    print e
+    exit(0)
 
 
 
 
 class App():
     def __init__(self, delay):
-    	self.delay = delay
-    	self.objects_dict = {}
+        self.delay = delay
+        self.objects_dict = {}
 
         self.stdin_path = '/dev/null'
         self.stdout_path = '/dev/tty'
@@ -47,11 +47,14 @@ class App():
 
     def run(self):
         while True:
-        	self.elasticsearch_reader.read_elasticsearch()
-        	self.cassandra_reader.read_cassandra()
-        	time.sleep(float(self.delay))
+            """
+            Could open threads for each db
+            """
+            self.elasticsearch_reader.read_elasticsearch()
+            #self.cassandra_reader.read_cassandra()
+            time.sleep(float(self.delay))
 
 
 app = App(delay)
 daemon_runner = runner.DaemonRunner(app)
-daemon_runner.do_action()			
+daemon_runner.do_action()           

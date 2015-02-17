@@ -167,12 +167,13 @@ class CassandraReader(object):
 		tc_kwargs = {'objects_dict': self.objects_dict, 'caller': CassandraLoader} 
 
 		for k in keyspaces:
-
 			start = time.time()
 
-
-
 			keyspace = k.keyspace_name
+
+			if keyspace != "ahz3gng779mmzm1cnb1h":
+				continue
+
 			self.session = cluster.connect(keyspace)
 
 			# Instantiate TheCheker for each keyspace
@@ -194,6 +195,11 @@ class CassandraReader(object):
 
 			for cf in columnfamilies:
 				columnfamily = cf.columnfamily_name
+
+				if columnfamily != "ab12":
+					continue
+
+
 				print "columnfamilies: %s" % columnfamily
 
 				""" Get columns (Columns)"""

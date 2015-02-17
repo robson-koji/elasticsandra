@@ -47,11 +47,12 @@ class ElasticsearchReader(object):
 
 		# Indices (Database)
 		for es_indice, indice_value in es_json.iteritems():
-			print "\n\n\n=============================="
-			print "Indice: %s" % es_indice
-
-			# if es_indice != "xyz":
+			# if es_indice != "ahz3gng779mmzm1cnb1h":
 			# 	continue
+
+			# print "\n\n\n=============================="
+			# print "Indice: %s" % es_indice
+
 
 			# Instantiate TheCheker for each indice
 			tc_kwargs['db'] = es_indice
@@ -62,8 +63,15 @@ class ElasticsearchReader(object):
 
 			# Types (Tables)
 			for es_type, type_value in es_json[es_indice].get('mappings').iteritems():
-				print "Indice: %s" % es_indice
-				print "Type: %s" % es_type
+				# if es_type != "ab12":
+				# 	continue
+
+				# print "\n\n\n\n\n\n\n--------------------"
+				# print "Indice: %s" % es_indice
+				# print "Type: %s" % es_type
+				# print "\n\n\n\n\n\n\n--------------------"
+
+
 
 				# Properties (Columns)
 				# for es_property, property_value in es_json[es_indice].get('mappings')[es_type].get('properties').iteritems():
