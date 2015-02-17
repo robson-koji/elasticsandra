@@ -35,8 +35,8 @@ class CassandraSchemaHandler(object):
 		# Ordering is needed for slice while selecting and limiting qt of returning query.
 		# clf_id creates an artificial table to allow ordering. Whithout EQ or IN it is not
 		# possible to order, so the select is equal his own columnfamilly.
-		creating_columns = "( " + ",".join("{0} {1}".format(cl[0], cl[1]) for cl in self.columns) + \
-								", PRIMARY KEY (clf_id, timestamp, KEY)) WITH CLUSTERING ORDER BY (timestamp DESC)"
+		creating_columns = "( " + ",".join("{0} {1}".format(cl[0], cl[1]) for cl in self.columns) + ", PRIMARY KEY (KEY)) "
+			#					", PRIMARY KEY (clf_id, timestamp, KEY)) WITH CLUSTERING ORDER BY (timestamp DESC)"
 		
 
 
@@ -214,7 +214,8 @@ class CassandraReader(object):
 
 				""" Get field values (Columns)"""
 				try:			
-					query = " SELECT * FROM " + columnfamily + " WHERE clf_id = \'" +columnfamily+ "\' ORDER BY timestamp DESC LIMIT " + str(LIMIT)
+					#query = " SELECT * FROM " + columnfamily + " WHERE clf_id = \'" +columnfamily+ "\' ORDER BY timestamp DESC LIMIT " + str(LIMIT)
+					query = " SELECT * FROM " + columnfamily
 					rows = self.session.execute(query)
 
 					es_columns = {}
@@ -224,7 +225,7 @@ class CassandraReader(object):
 						try:
 							es_insert_kwargs['doc_type'] = columnfamily
 							es_insert_kwargs['timestamp'] = row.timestamp
-							es_insert_kwargs['last_change'] = row.last_change
+							# es_insert_kwargs['last_change'] = row.last_change
 							es_insert_kwargs['id'] = row.key
 
 							# Filling es_columns dict inside try, to avoid id or timestamp errors

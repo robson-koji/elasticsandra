@@ -28,7 +28,7 @@ class TheChecker(object):
 
     def check_exists(self, *args, **kwargs):
         self.id = str(kwargs['id'])
-        self.date = kwargs['last_change'] 
+        self.date = kwargs['timestamp'] 
 
         
         print self.id

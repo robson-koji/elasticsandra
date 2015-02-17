@@ -96,27 +96,27 @@ class ElasticsearchReader(object):
 						# Check format for incoming timestamp string.
 						try:
 							str_timestamp = self.timestamp_converter(es_hits_hits.get('_source').get('timestamp'))
-							str_last_change = self.timestamp_converter(es_hits_hits.get('_source').get('last_change'))							
+							# str_last_change = self.timestamp_converter(es_hits_hits.get('_source').get('last_change'))							
 						except AttributeError as e:
 							print e
 							continue
 
 
 						quoted_ts = '\''+str(str_timestamp)+'\''
-						quoted_ls = '\''+str(str_last_change)+'\''
+						# quoted_ls = '\''+str(str_last_change)+'\''
 
 						cs_columns.append(('KEY', 'uuid', es_hits_hits.get('_id')))
 						cs_columns.append(('timestamp', 'timestamp', quoted_ts))
-						cs_columns.append(('last_change', 'timestamp', quoted_ls))
+						# cs_columns.append(('last_change', 'timestamp', quoted_ls))
 
-						cs_columns.append(('clf_id', 'varchar', '\''+str(es_type)+'\''))
+						# cs_columns.append(('clf_id', 'varchar', '\''+str(es_type)+'\''))
 
 						for eshh in es_hits_hits.get('_source'):
 							conv_type, conv_value  = self.type_converter(es_hits_hits.get('_source').get(eshh).__class__.__name__,\
 								es_hits_hits.get('_source').get(eshh))
 
 							# This field has already been set	
-				 	 		if eshh == 'timestamp' or eshh == 'key' or eshh == 'id' or eshh == 'clf_id' or eshh == 'last_change':
+				 	 		if eshh == 'timestamp' or eshh == 'key' or eshh == 'id':# or eshh == 'clf_id' or eshh == 'last_change':
 				 	 			continue
 
 				 	 		# All list fields on Cassandra are created type text.
@@ -128,12 +128,12 @@ class ElasticsearchReader(object):
 
 							cs_columns.append((eshh, conv_type, conv_value))
 
-						print '-------------'
-						print str_last_change
-						print '-------------'
+						# print '-------------'
+						# print str_last_change
+						# print '-------------'
 						cs_insert_kwargs['id'] = es_hits_hits.get('_id')
 						cs_insert_kwargs['timestamp'] = str_timestamp
-						cs_insert_kwargs['last_change'] = str_last_change						
+						# cs_insert_kwargs['last_change'] = str_last_change						
 						cs_insert_kwargs['columnfamily'] = es_type
 						cs_insert_kwargs['cs_columns'] = cs_columns
 						t_checker.check_exists(**cs_insert_kwargs)

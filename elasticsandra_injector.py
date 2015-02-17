@@ -50,7 +50,7 @@ def elasticsearch(qt_indices):
 
 			# Fill columns
 			es_columns = {'timestamp': datetime.now(),
-							'last_change': datetime.now(),
+							#'last_change': datetime.now(),
 							'firstname': firstname, 
 							'lastname': lastname, 
 							'age':  idx, 
@@ -118,9 +118,9 @@ def cassandra(qt_indices):
 
 			cs_columns.append(('KEY', 'uuid', str(uuid.uuid4())))
 			cs_columns.append(('timestamp', 'timestamp', quoted_ts))
-			cs_columns.append(('clf_id', 'varchar', '\''+str(columnfamily)+'\''))
+#			cs_columns.append(('clf_id', 'varchar', '\''+str(columnfamily)+'\''))
 
-			cs_columns.append(('last_change', 'timestamp', quoted_ts))
+#			cs_columns.append(('last_change', 'timestamp', quoted_ts))
 			cs_columns.append(('firstname', 'varchar', firstname))
 			cs_columns.append(('lastname', 'varchar', lastname))
 			cs_columns.append(('age', 'int', idx))			
