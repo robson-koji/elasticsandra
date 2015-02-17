@@ -46,13 +46,27 @@ class App():
         self.elasticsearch_reader = ElasticsearchReader(self.objects_dict)
 
     def run(self):
+        inicio = ''
+        fim = ''
         while True:
+            inicio = datetime.now()
+
             """
             Could open threads for each db
             """
             self.elasticsearch_reader.read_elasticsearch()
-            #self.cassandra_reader.read_cassandra()
+            self.cassandra_reader.read_cassandra()
+
+
+            fim = datetime.now()
+            print inicio
+            print fim
+
+
             time.sleep(float(self.delay))
+
+
+
 
 
 app = App(delay)

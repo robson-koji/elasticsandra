@@ -28,9 +28,22 @@ class TheChecker(object):
 
     def check_exists(self, *args, **kwargs):
         self.id = str(kwargs['id'])
-        self.date = kwargs['timestamp'] 
+        self.date = kwargs['last_change'] 
+
+        
+        print self.id
+        print self.date
+        try:
+            print self.objects_dict[str(self.id)]
+            print "Sync\n"
+        except:
+            print "Not Sync"
+
+
 
         if self.id not in self.objects_dict or (self.id in self.objects_dict and self.date > self.objects_dict[self.id]):
+            print "New or updated field\n"
+
             # Update DB
             self.updater.insert_data(**kwargs)
 

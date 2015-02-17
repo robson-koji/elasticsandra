@@ -1,13 +1,13 @@
 from elasticsandra.es_cassandra import CassandraLoader
 from elasticsandra.es_elasticsearch import ElasticsearchLoader
 
+from datetime import datetime
+
 
 import uuid
 import time
 import random
 import string
-import elasticsearch
-from datetime import datetime
 
 
 
@@ -28,7 +28,7 @@ def elasticsearch(qt_indices):
 		the 16 randonly created tables (doc_type).
 		"""
 		idx_docs = 0
-		while (idx_docs < 5000):
+		while (idx_docs < 500):
 			# Sort string randonly
 			s="abcd"
 			doc_type = ''.join(random.sample(s,len(s)))
@@ -50,6 +50,7 @@ def elasticsearch(qt_indices):
 
 			# Fill columns
 			es_columns = {'timestamp': datetime.now(),
+							'last_change': datetime.now(),
 							'firstname': firstname, 
 							'lastname': lastname, 
 							'age':  idx, 
@@ -70,14 +71,9 @@ def elasticsearch(qt_indices):
 
 
 # Create 20 databases. Increase on your will.
-#qt_indices = 20
-#elasticsearch(qt_indices)
+qt_indices = 2
+elasticsearch(qt_indices)
 
-
-
-
-import cassandra
-import re
 
 
 
@@ -97,7 +93,7 @@ def cassandra(qt_indices):
 		the 16 randonly created tables (columnfamily).
 		"""
 		idx_docs = 0
-		while (idx_docs < 5000):			# Sort string randonly
+		while (idx_docs < 500):			# Sort string randonly
 			s="abcd"
 			columnfamily = ''.join(random.sample(s,len(s)))
 
@@ -124,6 +120,7 @@ def cassandra(qt_indices):
 			cs_columns.append(('timestamp', 'timestamp', quoted_ts))
 			cs_columns.append(('clf_id', 'varchar', '\''+str(columnfamily)+'\''))
 
+			cs_columns.append(('last_change', 'timestamp', quoted_ts))
 			cs_columns.append(('firstname', 'varchar', firstname))
 			cs_columns.append(('lastname', 'varchar', lastname))
 			cs_columns.append(('age', 'int', idx))			
@@ -147,7 +144,7 @@ def cassandra(qt_indices):
 
 
 # Create 20 databases. Increase on your will.
-qt_indices = 1
+qt_indices = 2
 cassandra(qt_indices)
 
 

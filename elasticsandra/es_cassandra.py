@@ -171,8 +171,8 @@ class CassandraReader(object):
 
 			keyspace = k.keyspace_name
 
-			if keyspace != "ahz3gng779mmzm1cnb1h":
-				continue
+			# if keyspace != "ahz3gng779mmzm1cnb1h":
+			# 	continue
 
 			self.session = cluster.connect(keyspace)
 
@@ -196,8 +196,8 @@ class CassandraReader(object):
 			for cf in columnfamilies:
 				columnfamily = cf.columnfamily_name
 
-				if columnfamily != "ab12":
-					continue
+				# if columnfamily != "ab12":
+				# 	continue
 
 
 				print "columnfamilies: %s" % columnfamily
@@ -224,6 +224,7 @@ class CassandraReader(object):
 						try:
 							es_insert_kwargs['doc_type'] = columnfamily
 							es_insert_kwargs['timestamp'] = row.timestamp
+							es_insert_kwargs['last_change'] = row.last_change
 							es_insert_kwargs['id'] = row.key
 
 							# Filling es_columns dict inside try, to avoid id or timestamp errors
