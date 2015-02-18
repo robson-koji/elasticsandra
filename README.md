@@ -19,7 +19,7 @@ It is recommend that you use virtualenv and create an environment to install Ela
 
 Git clone the repository in your home, or elsewhere. 
 
-A directory called *<elastisandra>* will be created on git clone.
+A directory called *elastisandra* will be created on git clone.
 
 - cd ~ 
 - git clone https://github.com/fortinbras/elasticsandra.git
@@ -36,16 +36,16 @@ These libs will be used by the daemon and by the injector script, documented on 
 
 Source code of the libs are here, and they are installed on your virtuaenv python libs dir (assuming you are using virtualenv):
 
-*<installation_dir>/elasticsandra/elasticsandra/elasticsandra.py*
+*installation_dir/elasticsandra/elasticsandra/elasticsandra.py*
 
-*<installation_dir>/elasticsandra/elasticsandra/es_cassandra.py*
+*installation_dir/elasticsandra/elasticsandra/es_cassandra.py*
 
-*<installation_dir>/elasticsandra/elasticsandra/es_elasticsearch.py*
+*installation_dir/elasticsandra/elasticsandra/es_elasticsearch.py*
 
 
 
 ##Injector script
-*<installation_dir>/elasticsandra/elasticsandra_injector.py*
+*installation_dir/elasticsandra/elasticsandra_injector.py*
 
 This script creates random data to load in Elasticsearch and Cassandra.
 
@@ -77,12 +77,11 @@ Be sure that Cassandra and Elasticsearch are running, or you will have errors.
 Elasticsandra has been tested with Elasticsearch and Cassandra on default ports configuration, and no access control for both. If you have custom values you may face problems. No different configuration parameters were tested.
 
 
-<installation_dir>
 ##Daemon
-*<installation_dir>/elasticsandra/elasticsandra.py*
+*installation_dir/elasticsandra/elasticsandra.py*
 
 It runs as a daemon and starts as ordinary daemons and receives an additional parameter to control interval for repetition.
-*elasticsandra.py start <interval in seconds>*
+*elasticsandra.py start -interval in seconds-*
 
 It reads data from Elasticsearch and Cassandra, check if data is synchronized or synchronize and store in an internal dictionary.
 
