@@ -29,6 +29,10 @@ Git clone the repository in your home, or elsewhere. A directory called *elastis
 
 Install required dependencies to finalize the installation process.
 
+- pip install -r elasticsandra/requirements.txt
+
+
+
 
 
 ##Libs
@@ -96,7 +100,7 @@ Install dependencies and everything will gonna be right.
 It reads data from Elasticsearch and Cassandra, check if data is synchronized or synchronize. After that it creates an internal indice in a dictionary to control synchronization.
 If you run Elasticsandra daemon with empty Elasticsearch and/or empty Cassandra, the daemon will raise an error due to empty structure. Inject data first.
 
-If you want to see ongoing information on your console, change output from /dev/null to /dev/tty for stdout and sterr on the daemon code. It is all there.
+If you want to hide ongoing information on your console, change output from /dev/tty to /dev/null for stdout and sterr on the daemon code.
 
 
 ##Update test
