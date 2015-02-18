@@ -21,24 +21,22 @@ Some filters have to be implemented direct on the databases layer too, to put pr
 ##Download and install
 It is recommend that you use virtualenv and create an environment to install Elasticsandra.
 
-Git clone the repository in your home, or elsewhere. 
-
-A directory called *elastisandra* will be created on git clone.
+Git clone the repository in your home, or elsewhere. A directory called *elastisandra* will be created after git clone.
 
 - cd ~ 
 - git clone https://github.com/fortinbras/elasticsandra.git
 - pip install elasticsandra/dist/elasticsandra-0.1.tar.gz
 
-Install required dependencies to finalize de installation process.
+Install required dependencies to finalize the installation process.
 
 
 
 ##Libs
 Once you have finished the installation process, you will have had installed Elasticsandra libs.
 
-These libs will be used by the daemon and by the injector script, documented on the following sections.
+These libs will be used by the daemon and by the injector script, which are documented bellow.
 
-Source code of the libs are here, and they are installed on your virtuaenv python libs dir (assuming you are using virtualenv):
+Elasticsandra libs were installed on your virtuaenv python libs dir (assuming you are using virtualenv). These are the source code path:
 
 - *installation_dir/elasticsandra/elasticsandra/elasticsandra.py*
 - *installation_dir/elasticsandra/elasticsandra/es_cassandra.py*
@@ -85,14 +83,14 @@ Elasticsandra has been tested with Elasticsearch and Cassandra on default ports 
 It runs as a daemon and starts as ordinary daemons and receives an additional parameter to control interval for repetition.
 *elasticsandra.py start -interval in seconds-*
 
-It reads data from Elasticsearch and Cassandra, check if data is synchronized or synchronize and store in an internal dictionary.
+It reads data from Elasticsearch and Cassandra, check if data is synchronized or synchronize. After that it creates an internal indice in a dictionary to control synchronization.
 
 
 ##Known bugs
-- The first time the daemon runs, if data exists in databases it assumes that data databases data are in sync. If this is not true, on the first round old data can be replicated instead of new data from one database to another. 
-- Content of list type are all translated to type text in Cassandra. 
-- Timestamp data comming as unicode on the Python/Elasticsearch driver, instead of timestamp type. Maybe a driver bug!?
-- **There is a maing BUG which annoyed me during development. I could not investigate in depth but I think that it relates to this one: https://datastax-oss.atlassian.net/browse/PYTHON-124**
+- The first time the daemon runs, if data exists in databases it assumes that databases are in sync. If this is not true, on the first round, old data can be replicated instead of new data from one database to another. 
+- Contents inside of list type are all translated to type text in Cassandra. 
+- Timestamp data is comming as unicode on the Python/Elasticsearch driver, instead of timestamp type. Maybe a driver bug!?
+- **There is a maing BUG in Cassandra which annoyed me during development, because Cassandra dyes and the cause is not well documented. I could not investigate in depth, but I think that it relates to this one: https://datastax-oss.atlassian.net/browse/PYTHON-124**
 
 
 
@@ -101,21 +99,21 @@ It reads data from Elasticsearch and Cassandra, check if data is synchronized or
 - Perform bulk insertion instead of atomic transactions.
 - Are there lazy load transactions on Cassandra and/or Elasticsearch?
 - Create a configuration file to Elasticsandra read properties like ports, urls, users, passwords etc.
-- Check all data types conversions.
+- Check all data types conversion.
 
 
 
 ##Development environment
 Elasticsandra relies on Elasticsearch and Cassandra driver for Python, besides Elasticsearch and Cassandra their own, of course.
 
-###Drivers:
+###Python drivers:
 - cassandra-driver==2.1.4
 - elasticsearch==1.4.0
 
 ###Programs:
-cassandra-2.0.11
-elasticsearch-1.3.1
-lucene4.9
+- cassandra-2.0.11
+- elasticsearch-1.3.1
+- lucene4.9
 - elasticsandra==0.1
 
 ###Others:
