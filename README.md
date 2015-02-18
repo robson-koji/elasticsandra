@@ -89,6 +89,13 @@ It reads data from Elasticsearch and Cassandra, check if data is synchronized or
 If you want to see ongoing information on your console, change output from /dev/null to /dev/tty for stdout and sterr on the daemon code. It is all there.
 
 
+##Update test
+To test synchronization of new data, you can use the injector or any other GUI, frontend, curl etc.
+To test update, you can use a GUI for Cassandra and ES or curl for ES and update anything you want, as long as you update the field timestamp. 
+Timestamp field is always checked to verify which register (row, document) is newer, and update de older.
+
+
+
 ##Known bugs
 - The first time the daemon runs, if data exists in databases it assumes that databases are in sync. If this is not true, on the first round, old data can be replicated instead of new data from one database to another. 
 - Contents inside of list type are all translated to type text in Cassandra. 
@@ -103,6 +110,7 @@ If you want to see ongoing information on your console, change output from /dev/
 - Are there lazy load transactions on Cassandra and/or Elasticsearch?
 - Create a configuration file to Elasticsandra read properties like ports, urls, users, passwords etc.
 - Check all data types conversion.
+- Document the API.
 
 
 
