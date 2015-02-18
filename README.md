@@ -2,11 +2,11 @@
 
 
 ##About Elasticsandra
-This is a program that have been developed to maintain two systems in sync, for instance Elasticsearch and Cassandra.
+This is a program that have been developed to maintain two systems in sync, for instance Elasticsearch and Cassandra. It checks both DBs and sync the other. 
 
-It checks both DBs and sync the other. There is a daemon, that call specific libs to do this. 
+There is a script running in daemon mode, that call the libs of the system to do this. 
 
-It is expected that Elasticsandra creates the whole structure on both sides, mirroring what it has read. Talking in RDBs language, it creates the DB, tables, columns and acctual data (rows).
+It is expected that Elasticsandra creates the whole structure on both sides, mirroring the one it reads. Talking in RDBs language, it creates the DB, tables, columns and acctual data (rows).
 
 I developed this program while learning both technologies and it is just a POC, not to be used in production environment. 
 
@@ -19,7 +19,7 @@ Some filters have to be implemented direct on the databases layer too, to put pr
 
 
 ##Download and install
-It is recommend that you use virtualenv and create an environment to install Elasticsandra.
+It is recommended that you use virtualenv and create an environment to install Elasticsandra.
 
 Git clone the repository in your home, or elsewhere. A directory called *elastisandra* will be created after git clone.
 
@@ -49,7 +49,7 @@ Elasticsandra libs were installed on your virtuaenv python libs dir (assuming yo
 
 This script creates random data to load in Elasticsearch and Cassandra.
 
-If you want to start a test from the scratch, cleanup first Elasticsearch and Cassandra and run this script to load some initial data.
+If you want to start a test from the scratch, cleanup first Elasticsearch and Cassandra and run this script to load some initial data. 
 
 It will create 2 DBs for Elasticsearch and 2 DBs for Cassandra, 16 tables for each DB with 7 colums for each table, and 500 rows for each table.
 
@@ -85,6 +85,7 @@ Elasticsandra daemon runs and starts as ordinary daemons and receives an additio
 **elasticsandra.py start -interval in seconds-**
 
 It reads data from Elasticsearch and Cassandra, check if data is synchronized or synchronize. After that it creates an internal indice in a dictionary to control synchronization.
+If you run Elasticsandra daemon with empty Elasticsearch and/or empty Cassandra, the daemon will raise an error due to empty structure. Inject data first.
 
 If you want to see ongoing information on your console, change output from /dev/null to /dev/tty for stdout and sterr on the daemon code. It is all there.
 
@@ -92,11 +93,11 @@ If you want to see ongoing information on your console, change output from /dev/
 ##Update test
 To test synchronization of new data, you can use the injector or any other GUI, frontend, curl etc.
 
-To test update, you can use a GUI for Cassandra and ES or curl for ES and update anything you want, as long as you update the field timestamp. 
+To test update of existing data, you can use a GUI for Cassandra and ES or curl for ES and update anything you want, as long as you update the field timestamp. 
 
-Timestamp field is always checked to verify which register (row, document) is newer, and update de older.
+**Timestamp field is always checked to verify which register (row, document) is newer, and update de older.**
 
-If a new column is created on Elasticsearch, it will not be replicated to Cassandra. Consider this as a constrain of the Elasticsandra, or a new feature to be developed.
+If a new column (schema changing) is created on Elasticsearch, it will not be replicated to Cassandra. Consider this as a constrain of the Elasticsandra, or a new feature to be developed.
 
 
 
