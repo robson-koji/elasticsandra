@@ -80,10 +80,13 @@ Elasticsandra has been tested with Elasticsearch and Cassandra on default ports 
 ##Daemon
 *installation_dir/elasticsandra/elasticsandra.py*
 
-It runs as a daemon and starts as ordinary daemons and receives an additional parameter to control interval for repetition.
-*elasticsandra.py start -interval in seconds-*
+Elasticsandra daemon runs and starts as ordinary daemons and receives an additional parameter to control interval for repetition.
+
+**elasticsandra.py start -interval in seconds-**
 
 It reads data from Elasticsearch and Cassandra, check if data is synchronized or synchronize. After that it creates an internal indice in a dictionary to control synchronization.
+
+If you want to see ongoing information on your console, change output from /dev/null to /dev/tty for stdout and sterr on the daemon code. It is all there.
 
 
 ##Known bugs

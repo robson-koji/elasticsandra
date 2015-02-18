@@ -28,6 +28,7 @@ def elasticsearch(qt_indices):
 		the 16 randonly created tables (doc_type).
 		"""
 		idx_docs = 0
+		# Inject 500 random created documents. Change on your will.
 		while (idx_docs < 500):
 			# Sort string randonly
 			s="abcd"
@@ -93,7 +94,9 @@ def cassandra(qt_indices):
 		the 16 randonly created tables (columnfamily).
 		"""
 		idx_docs = 0
-		while (idx_docs < 500):			# Sort string randonly
+		# Inject 500 random created documents. Change on your will.		
+		while (idx_docs < 500):			
+			# Sort string randonly
 			s="abcd"
 			columnfamily = ''.join(random.sample(s,len(s)))
 
