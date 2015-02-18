@@ -4,6 +4,10 @@
 ##About Elasticsandra
 This is a program that have been developed to maintain two systems in sync, for instance Elasticsearch and Cassandra.
 
+It checks both DBs and sync the other. There is a daemon, that call specific libs to do this. 
+
+It is expected that Elasticsandra creates the whole structure on both sides, mirroring what it has read. Talking in RDBs language, it creates the DB, tables, columns and acctual data (rows).
+
 I developed this program while learning both technologies and it is just a POC, not to be used in production environment. 
 
 It was implemented in a point of view of RDBs and not NoSQL persistence systems, and some access to databases are made by navigating through the schema, instead of direct data access. This turns the system slow in some cases.
@@ -36,11 +40,9 @@ These libs will be used by the daemon and by the injector script, documented on 
 
 Source code of the libs are here, and they are installed on your virtuaenv python libs dir (assuming you are using virtualenv):
 
-*installation_dir/elasticsandra/elasticsandra/elasticsandra.py*
-
-*installation_dir/elasticsandra/elasticsandra/es_cassandra.py*
-
-*installation_dir/elasticsandra/elasticsandra/es_elasticsearch.py*
+- *installation_dir/elasticsandra/elasticsandra/elasticsandra.py*
+- *installation_dir/elasticsandra/elasticsandra/es_cassandra.py*
+- *installation_dir/elasticsandra/elasticsandra/es_elasticsearch.py*
 
 
 
@@ -87,4 +89,37 @@ It reads data from Elasticsearch and Cassandra, check if data is synchronized or
 
 
 ##Known bugs
-The first time the daemon runs, if data exists in databases it assumes that data databases data are in sync. If this is not true, on the first round old data can be replicated instead of new data from one database to another. 
+- The first time the daemon runs, if data exists in databases it assumes that data databases data are in sync. If this is not true, on the first round old data can be replicated instead of new data from one database to another. 
+- Content of list type are all translated to type text in Cassandra. 
+- Timestamp data comming as unicode on the Python/Elasticsearch driver, instead of timestamp type. Maybe a driver bug!?
+- **There is a maing BUG which annoyed me during development. I could not investigate in depth but I think that it relates to this one: https://datastax-oss.atlassian.net/browse/PYTHON-124**
+
+
+
+##Enhancements
+- Make direct access to data on Cassandra and Elasticsearch, instead of schema navigation. 
+- Perform bulk insertion instead of atomic transactions.
+- Are there lazy load transactions on Cassandra and/or Elasticsearch?
+- Create a configuration file to Elasticsandra read properties like ports, urls, users, passwords etc.
+- Check all data types conversions.
+
+
+
+##Development environment
+Elasticsandra relies on Elasticsearch and Cassandra driver for Python, besides Elasticsearch and Cassandra their own, of course.
+
+###Drivers:
+- cassandra-driver==2.1.4
+- elasticsearch==1.4.0
+
+###Programs:
+cassandra-2.0.11
+elasticsearch-1.3.1
+lucene4.9
+- elasticsandra==0.1
+
+###Others:
+- python-daemon==1.6.1
+- time-uuid==0.1.1
+- Ubuntu 64
+- Linux 3.13.0-45
