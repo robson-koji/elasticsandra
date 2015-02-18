@@ -91,8 +91,12 @@ If you want to see ongoing information on your console, change output from /dev/
 
 ##Update test
 To test synchronization of new data, you can use the injector or any other GUI, frontend, curl etc.
+
 To test update, you can use a GUI for Cassandra and ES or curl for ES and update anything you want, as long as you update the field timestamp. 
+
 Timestamp field is always checked to verify which register (row, document) is newer, and update de older.
+
+If a new column is created on Elasticsearch, it will not be replicated to Cassandra. Consider this as a constrain of the Elasticsandra, or a new feature to be developed.
 
 
 
