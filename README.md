@@ -82,7 +82,7 @@ Elasticsandra has been tested with Elasticsearch and Cassandra on default ports 
 
 Elasticsandra daemon runs and starts as ordinary daemons and receives an additional parameter to control interval for repetition.
 
-**elasticsandra/elasticsandra.py start <<interval in seconds>>**
+**elasticsandra/elasticsandra.py start <interval in seconds<>>**
 
 It reads data from Elasticsearch and Cassandra, check if data is synchronized or synchronize. After that it creates an internal indice in a dictionary to control synchronization.
 If you run Elasticsandra daemon with empty Elasticsearch and/or empty Cassandra, the daemon will raise an error due to empty structure. Inject data first.
