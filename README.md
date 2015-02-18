@@ -82,7 +82,7 @@ Elasticsandra has been tested with Elasticsearch and Cassandra on default ports 
 
 Elasticsandra daemon runs and starts as ordinary daemons and receives an additional parameter to control interval for repetition.
 
-** python elasticsandra/elasticsandra.py start (interval in seconds)**
+**python elasticsandra/elasticsandra.py start (interval in seconds)**
 
 If you get some erros like this:
 
