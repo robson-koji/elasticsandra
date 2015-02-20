@@ -3,14 +3,21 @@ from elasticsandra.es_elasticsearch import ElasticsearchLoader
 
 from datetime import datetime
 
-
 import uuid
 import time
 import random
 import string
 
 
+"""
+This script injects data on Cassandra and/or ElasticSearch.
+This script has two methods that can be called independetly to inject data on each system.
+By default the two methods are called. To inject data only in Cassandra or in Elasticsearch,
+just comment the caller to the other.
+"""
 
+
+# This method injects data on Cassandra
 def elasticsearch(qt_indices):
 	idx = 0
 	while (idx < qt_indices):
@@ -71,19 +78,17 @@ def elasticsearch(qt_indices):
 		idx += 1
 
 
-# Create 20 databases. Increase on your will.
-qt_indices = 2
-elasticsearch(qt_indices)
 
 
 
 
+# This method injects data on Cassandra
 def cassandra(qt_indices):
 	idx = 0
 	while (idx < qt_indices):
 		keyspace =  ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(20))
 
-		# Create random indices (databases) for Elasticsearch
+		# Create random indices (databases) for Cassandra
 		random_head="pouiqwer"
 		keyspace = ''.join(random.sample(random_head,len(random_head))) + keyspace
 		cs_init_kwargs = {'db': keyspace}
@@ -146,8 +151,12 @@ def cassandra(qt_indices):
 
 
 
-# Create 20 databases. Increase on your will.
+# Create 2 databases for each system. Increase on your will.
 qt_indices = 2
+
+# Comment this to inject to only ElasticSearch
 cassandra(qt_indices)
 
+# Comment this to inject to only Cassandra
+elasticsearch(qt_indices)
 

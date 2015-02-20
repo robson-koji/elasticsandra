@@ -2,8 +2,11 @@ from elasticsandra.es_cassandra import CassandraReader
 from elasticsandra.es_elasticsearch import ElasticsearchReader
 
 import os
+import re
 import sys
 import time
+import elasticsearch
+import cassandra
 
 from datetime import datetime
 from daemon import runner
@@ -54,8 +57,44 @@ class App():
             """
             Could open threads for each db
             """
-            self.elasticsearch_reader.read_elasticsearch()
-            self.cassandra_reader.read_cassandra()
+
+            try:
+                self.cassandra_reader.read_cassandra()
+            except cassandra.cluster.NoHostAvailable as e:
+                if re.search('Connection refused' , str(e)) is not None:
+                    print """\n\n
+                    ============================================
+                    Cassandra is probably not running.
+                    Start Cassandra first and restart the daemon
+                    ============================================
+                    \n\n"""
+                    raise
+                else:
+                    print """\n\n
+                    ================================================
+                    Cassandra keyspaces not found. Restart Cassandra
+                    sudo service cassandra restart
+                    ================================================
+                    \n\n"""
+                    raise
+            try:
+                self.elasticsearch_reader.read_elasticsearch()
+            except elasticsearch.exceptions.ConnectionError as e:
+                print """\n\n
+                ================================================
+                Elasticsearch is probably not running.
+                Start Elasticsearch first and restart the daemon
+                ================================================
+                \n\n"""
+                raise
+            except elasticsearch.exceptions.NotFoundError as e:
+                print """\n\n
+                ======================================
+                ElasticSearch indices not found.
+                Inject some data on Cassandra or 
+                ElasticSerch to start synchronization.
+                ======================================
+                \n\n"""
 
 
             fim = datetime.now()
