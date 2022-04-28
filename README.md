@@ -1,7 +1,7 @@
-#README
+# README
 
 
-##About Elasticsandra
+## About Elasticsandra
 This is a program that have been developed to maintain two systems in sync, for instance Elasticsearch and Cassandra. It checks both DBs and sync the other. 
 
 There is a script running in daemon mode, that call the libs of the system to do this. 
@@ -18,7 +18,7 @@ Some filters have to be implemented direct on the databases layer too, to put pr
 
 
 
-##Download and install
+## Download and install
 It is recommended that you use virtualenv and create an environment to install Elasticsandra.
 
 Git clone the repository in your home, or elsewhere. A directory called *elastisandra* will be created after git clone.
@@ -35,7 +35,7 @@ Install required dependencies to finalize the installation process.
 
 
 
-##Libs
+## Libs
 Once you have finished the installation process, you will have had installed Elasticsandra libs.
 
 These libs will be used by the daemon and by the injector script, which are documented bellow.
@@ -48,7 +48,7 @@ Elasticsandra libs were installed on your virtuaenv python libs dir (assuming yo
 
 
 
-##Injector script
+## Injector script
 *installation_dir/elasticsandra/elasticsandra_injector.py*
 
 This script creates random data to load in Elasticsearch and Cassandra.
@@ -71,7 +71,7 @@ You can run this injector while the daemon is running, to see data replication b
 
 
 
-##Start Elasticsearch and Cassandra
+## Start Elasticsearch and Cassandra
 Be sure that Cassandra and Elasticsearch are running, or you will have errors.
 
 *sudo service cassandra start*
@@ -81,7 +81,7 @@ Be sure that Cassandra and Elasticsearch are running, or you will have errors.
 Elasticsandra has been tested with Elasticsearch and Cassandra on default ports configuration, and no access control for both. If you have custom values you may face problems. No different configuration parameters were tested.
 
 
-##Daemon
+## Daemon
 *installation_dir/elasticsandra/elasticsandra.py*
 
 Elasticsandra daemon runs and starts as ordinary daemons and receives an additional parameter to control interval for repetition.
@@ -103,7 +103,7 @@ If you run Elasticsandra daemon with empty Elasticsearch and/or empty Cassandra,
 If you want to hide ongoing information on your console, change output from /dev/tty to /dev/null for stdout and sterr on the daemon code.
 
 
-##Update test
+## Update test
 To test synchronization of new data, you can use the injector or any other GUI, frontend, curl etc.
 
 To test update of existing data, you can use a GUI for Cassandra and ES or curl for ES and update anything you want, as long as you update the field timestamp. 
@@ -114,7 +114,7 @@ If a new column (schema changing) is created on Elasticsearch, it will not be re
 
 
 
-##Known bugs
+## Known bugs
 - The first time the daemon runs, if data exists in databases it assumes that databases are in sync. If this is not true, on the first round, old data can be replicated instead of new data from one database to another. 
 - Contents inside of list type are all translated to type text in Cassandra. 
 - Timestamp data is comming as unicode on the Python/Elasticsearch driver, instead of timestamp type. Maybe a driver bug!?
@@ -122,7 +122,7 @@ If a new column (schema changing) is created on Elasticsearch, it will not be re
 
 
 
-##Enhancements
+## Enhancements
 - Make direct access to data on Cassandra and Elasticsearch, instead of schema navigation. 
 - Perform bulk insertion instead of atomic transactions.
 - Are there lazy load transactions on Cassandra and/or Elasticsearch?
@@ -132,20 +132,20 @@ If a new column (schema changing) is created on Elasticsearch, it will not be re
 
 
 
-##Development environment
+## Development environment
 Elasticsandra relies on Elasticsearch and Cassandra driver for Python, besides Elasticsearch and Cassandra their own, of course.
 
-###Python drivers:
+### Python drivers:
 - cassandra-driver==2.1.4
 - elasticsearch==1.4.0
 
-###Programs:
+### Programs:
 - cassandra-2.0.11
 - elasticsearch-1.3.1
 - lucene4.9
 - elasticsandra==0.1
 
-###Others:
+### Others:
 - python-daemon==1.6.1
 - time-uuid==0.1.1
 - Ubuntu 64
